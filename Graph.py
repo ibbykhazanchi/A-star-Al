@@ -5,11 +5,13 @@ class Node:
     def __init__(self):
         self.explored = False
         self.blocked = False
+        self.visiblyBlocked = False
         self.g = math.inf
         self.h = None
         self.x = None
         self.y = None
         self.prev = None
+        self.search = 0
 
     def __lt__(self, other):
 
@@ -19,7 +21,7 @@ class Node:
             return self.g + self.h < other.g + other.h
 
     def __str__(self):
-        return "Node: { g value : " + str(self.g) + " }, { h value : " + str(self.h) + " }"
+        return '(' + str(self.x) + ', ' + str(self.y) + ')'
 
 class Graph:
     def __init__(self, x, y):
