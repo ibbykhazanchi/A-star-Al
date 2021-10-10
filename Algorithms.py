@@ -60,14 +60,8 @@ def computePath(graph, goal, openList, visited, counter, start):
         curr = curr.prev
     return path
 
-def main():
+def repeatedAlgo(graph, start, goal):
     counter = 0
-    graph = Graph(101, 101)
-    #Select start node randomly
-    start = selectRandomNode(graph)
-    #Select goal node randomly
-    goal = selectRandomNode(graph)
-
     #initialize finalPath List, add start to it
     finalPath = []
     finalPath.append((start.x, start.y))
@@ -107,11 +101,3 @@ def main():
     print(graph.__str__(start))
     print('\n')
     print(finalPath)
-
-main()
-
-
-
-        
-
-
