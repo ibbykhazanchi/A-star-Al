@@ -28,6 +28,14 @@ class Graph:
         self.graph = [[Node() for j in range(x)] for i in range(y)]
         self.DFS()
 
+    #Sets all visibly blocked to false, and all search values to 0
+    #necessary to cleanse the graph between calling different algorithms
+    def resetNodes(self):
+        for i in range(len(self.graph)):
+            for j in range(len(self.graph[i])):
+                self.graph[i][j].visiblyBlocked = False
+                self.graph[i][j].search = 0
+
     def DFS(self):
         for x in range(len(self.graph)):
          for y in range(len(self.graph[x])):

@@ -23,6 +23,30 @@ def setNeighborsToVisiblyBlocked(node, graph):
         if x >= 0 and x < 101 and y >= 0 and y < 101 and graph[x][y].blocked: 
             graph[x][y].visiblyBlocked = True
 
+def setHValues(graph, goal):
+    for i in range(len(graph)):
+        for j in range(len(graph[i])):
+            manhattanDist = abs(i - goal.x) + abs(j - goal.y)
+            graph[i][j].h = manhattanDist
+            graph[i][j].x = i
+            graph[i][j].y = j
+
+#this method checks for duplicate nodes on a path. If it finds them, it deletes one of them as well as all of the nodes between them.
+def removePathDuplicates(path):
+    for i in range(len(path)):
+        for j in range((i + 1), len(path)): 
+            if path[i] == path[j] and i != j:
+                del path[i:j]
+                removePathDuplicates(path)
+                return
+
+#test method used to ensure a path is valid, ie no nodes along it are blocked
+def printBlocked(path, graph):
+    for i in range(len(path)):
+        if graph[path[i][0]][path[i][1]].blocked:
+            print('BLOCKED')
+
+#main A* algo, used by both repeatedForwards and repeatedBackwards
 def computePath(graph, goal, openList, visited, counter, start):
     while openList:
         curr = heapq.heappop(openList)
@@ -60,7 +84,46 @@ def computePath(graph, goal, openList, visited, counter, start):
         curr = curr.prev
     return path
 
-def repeatedAlgo(graph, start, goal):
+#test A-star algo that does not repeat and has full knowledge of the environment from the get-go
+def testAStar(graph, goal, openList, visited, counter, start):
+    while openList:
+        curr = heapq.heappop(openList)
+        visited.add(curr)
+
+        if(curr == goal):
+            break
+
+        #find neighbors and compute g cost
+        xOffsets = [1, -1, 0, 0]
+        yOffsets = [0, 0, 1, -1]
+        for i in range(4):
+            x = curr.x + xOffsets[i]
+            y = curr.y + yOffsets[i]
+
+            if x >= 0 and x < len(graph) and y >= 0 and y < len(graph) and not graph[x][y].blocked and not graph[x][y] in visited:
+                neighbor = graph[x][y]
+                if neighbor.search < counter:
+                    neighbor.search = counter
+                    neighbor.g = math.inf
+                if neighbor in openList:
+                    # figure out if you need to update the f score
+                    newG = curr.g + 1
+                    if (newG) < (neighbor.g):
+                        neighbor.g = newG
+                        neighbor.prev = curr
+                        heapq.heapify(openList)
+                else:
+                    neighbor.g = curr.g + 1
+                    neighbor.prev = curr
+                    heapq.heappush(openList, neighbor)
+    path = []
+    while(curr != start):
+        path.insert(0, (curr.x, curr.y))
+        curr = curr.prev
+    return path
+
+def repeatedForwardsAlgo(graph, start, goal):
+
     counter = 0
     #initialize finalPath List, add start to it
     finalPath = []
@@ -71,12 +134,7 @@ def repeatedAlgo(graph, start, goal):
     print('goal = (' + str(goal.x) + ', ' + str(goal.y) + ')')
 
     #initialize hValues
-    for i in range(len(graph.graph)):
-        for j in range(len(graph.graph[i])):
-            manhattanDist = abs(i - goal.x) + abs(j - goal.y)
-            graph.graph[i][j].h = manhattanDist
-            graph.graph[i][j].x = i
-            graph.graph[i][j].y = j
+    setHValues(graph.graph, goal)
 
     while start != goal:
         setNeighborsToVisiblyBlocked(start, graph.graph)
@@ -89,6 +147,10 @@ def repeatedAlgo(graph, start, goal):
         visited = set()
         openList.append(start)
         path = computePath(graph.graph, goal, openList, visited, counter, start)
+        #check if goal is unreachable by checking if goal is on the path
+        if (goal.x, goal.y) not in path:
+            print('UNREACHABLE')
+            return
         #move start along the computed path, ensure that there are no blocked nodes
         # if there are blocked nodes, compute a new path with start set to the furthest unblocked node
         for i in range(len(path)):
@@ -98,6 +160,59 @@ def repeatedAlgo(graph, start, goal):
                 break
             setNeighborsToVisiblyBlocked(start, graph.graph)
             finalPath.append((start.x, start.y))
-    print(graph.__str__(start))
+    #remove any duplicates, print the length, print the final path
+    removePathDuplicates(finalPath)
+    printBlocked(finalPath, graph.graph)
+    print('\n')
+    print(len(finalPath))
+    print('\n')
+    print(finalPath)
+
+def repeatedBackwardsAlgo(graph, start, goal):
+    counter = 0
+    #initialize finalPath List, add goal to it
+    finalPath = []
+    finalPath.append((start.x, start.y))
+
+    #print start and goal coordinates
+    print('start = (' + str(start.x) + ', ' + str(start.y) + ')')
+    print('goal = (' + str(goal.x) + ', ' + str(goal.y) + ')')
+
+    while start != goal:
+        #initialize (or recompute) hValues
+        setHValues(graph.graph, start)
+
+        setNeighborsToVisiblyBlocked(start, graph.graph)
+        counter = counter + 1
+        goal.g = 0
+        start.search = counter
+        goal.search = counter
+        start.g = math.inf
+        openList = []
+        visited = set()
+        openList.append(goal)
+        path = computePath(graph.graph, start, openList, visited, counter, goal)
+        #check if goal is unreachable by checking if start is on the path
+        if (start.x, start.y) not in path:
+            print('UNREACHABLE')
+            return
+        #reverse path, add goal node to the end, remove first node (start)
+        path.reverse()
+        path.append((goal.x, goal.y))
+        path.pop(0)
+        #move start along the computed path, ensure that there are no blocked nodes
+        # if there are blocked nodes, compute a new path with start set to the furthest unblocked node
+        for i in range(len(path)):
+            start = graph.graph[path[i][0]][path[i][1]]
+            if start.blocked:
+                start = graph.graph[path[i - 1][0]][path[i - 1][1]]
+                break
+            setNeighborsToVisiblyBlocked(start, graph.graph)
+            finalPath.append((start.x, start.y))
+    #remove any duplicates, print the length, print the final path
+    removePathDuplicates(finalPath)
+    printBlocked(finalPath, graph.graph)
+    print('\n')
+    print(len(finalPath))
     print('\n')
     print(finalPath)
