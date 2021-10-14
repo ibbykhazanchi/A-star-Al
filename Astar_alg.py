@@ -1,13 +1,10 @@
 import pygame as pg
+import heapq, math
 import random
-import math
 import sys
-from os import path
-from queue import PriorityQueue
-
-MAPFILE = 'onegraph.txt'
+sys.setrecursionlimit(10000)
+#PYGAME SETTINGS
 TITLE = 'A Star Test'
-
 #Define Colors
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
@@ -19,253 +16,292 @@ PURPLE = (128, 0, 128)
 ORANGE = (255, 165, 0)
 GREY = (128, 128, 128)
 TURQUOISE = (64, 224, 208)
-
 #width/height of window
-ROWS = 101
-WIDTH, HEIGHT = 606, 606
+ROWS = 21
+COLS = 21
+WIDTH, HEIGHT = 588, 588 #606
+GAP = WIDTH // ROWS
+#Iitialize PG Window
 WIN = pg.display.set_mode((WIDTH, HEIGHT))
 pg.display.set_caption(TITLE)
+clock = pg.time.Clock()
+
 
 class Node:
-    def __init__(self, row, col, width, total_rows):
-        self.row = row
-        self.col = col
-        self.x = row * width
-        self.y = col * width
-        self.color = WHITE
-        self.neighbors = []
+    def __init__(self, width):
+        self.explored = False
+        self.blocked = False
+        self.visiblyBlocked = False
+        self.g = math.inf
+        self.h = None
+        self.x = None
+        self.y = None
+        self.prev = None
+        self.search = 0
         self.width = width
-        self.total_rows = total_rows
+        self.color = None
 
-    def get_pos(self):
-        return self.row, self.col
-
-    def is_closed(self):
-        return self.color == RED
-
-    def is_open(self):
-        return self.color == GREEN
-
-    def is_barrier(self):
-        return self.color == BLACK
-
-    def is_start(self):
-        return self.color == ORANGE
-
-    def is_end(self):
-        return self.color == TURQUOISE
-
-    def reset(self):
-        self.color = WHITE
-
-    def make_closed(self):
-        self.color = RED
-
-    def make_open(self):
-        self.color = GREEN
-
-    def make_barrier(self):
-        self.color = BLACK
-
-    def make_start(self):
-        self.color = ORANGE
-
-    def make_end(self):
-        self.color = TURQUOISE
-
-    def make_path(self):
+    def color_finalpath(self):
         self.color = PURPLE
 
-    def draw(self, win):
-        pg.draw.rect(win, self.color, (self.x, self.y, self.width, self.width))
+    def color_unblocked(self):
+        self.color = WHITE
 
-    def update_neighbors(self, grid):
-        self.neighbors = []
-        #DOWN
-        if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_barrier():
-            self.neighbors.append(grid[self.row + 1][self.col])
-        #UP
-        if self.row > 0 and not grid[self.row - 1][self.col].is_barrier():
-            self.neighbors.append(grid[self.row - 1][self.col])
-        #RIGHT
-        if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].is_barrier():
-            self.neighbors.append(grid[self.row][self.col + 1])
-        #LEFT
-        if self.col > 0 and not grid[self.row][self.col - 1].is_barrier():
-            self.neighbors.append(grid[self.row][self.col - 1])
+    def color_goal(self):
+        self.color = RED
+
+    def color_start(self):
+        self.color = GREEN
+
+    def color_blocked(self):
+        self.color = BLACK
+
+    def draw(self, win):
+        pg.draw.rect(win, self.color, ((self.x)*(self.width), (self.y)*(self.width), self.width, self.width))
 
     def __lt__(self, other):
-        return False
 
-#define heuristic function(Manhattan distance)
-def h(p1,p2):
-    x1, y1 = p1
-    x2, y2 = p2
-    return abs(x1-x2) + abs(y1 -y2)
+        if self.g + self.h == other.g + other.h:
+            return self.g < other.g
+        else:
+            return self.g + self.h < other.g + other.h
 
-#go back to start node and draw optimal path
-def reconstruct_path(last, current, draw):
-    while current in last:
-        current = last[current]
-        current.make_path()
-        draw()
+    def __str__(self):
+        return '(' + str(self.x) + ', ' + str(self.y) + ')'
 
-def algorithm(draw, grid, start, end):
-    #for breaking ties
-    count = 0
-    open_set = PriorityQueue()
-    open_set.put((0, count, start))
-    last = {}
+class Graph:
+    def __init__(self, x, y):
+        self.graph = [[Node(GAP) for j in range(x)] for i in range(y)]
+        self.DFS()
 
-    g = {node: float("inf") for row in grid for node in row}
-    g[start] = 0
+    def DFS(self):
+        for x in range(len(self.graph)):
+            for y in range(len(self.graph[x])):
+                if not self.graph[x][y].explored:
+                    self.explore(x,y)
 
-    f = {node: float("inf") for row in grid for node in row}
-    f[start] = h(start.get_pos(), end.get_pos())
+    def explore(self, x, y):
+        #set current node to explored, set it to blocked with 30% probability and unblocked with 70% probability
+        # if it is blocked, return graph without exploring neighbors
+        # if it is unblocked, explore neighors
+        if self.graph[x][y].explored:
+            return
 
-    open_set_hash = {start}
+        self.graph[x][y].explored = True
+        if random.random() < .3:
+            self.graph[x][y].blocked = True
+            return
+        #at this point the node is unblocked, so add neighbors to openList
+        openList = []
+        # check y+1
+        if (y+1) < len(self.graph[0]):
+            if not self.graph[x][y+1].explored:
+                openList.append([x, y+1])
+        #check y-1
+        if (y-1) >= 0:
+            if not self.graph[x][y-1].explored:
+                openList.append([x, y-1])
+        #check x+1
+        if (x+1) < len(self.graph):
+            if not self.graph[x+1][y].explored:
+                openList.append([x+1, y])
+        #check x-1
+        if (x-1) >= 0:
+            if not self.graph[x-1][y].explored:
+                openList.append([x-1, y])
+        #explore the items in the open list in random order
+        while openList:
+            neighbor = random.choice(openList)
+            graph = self.explore(neighbor[0], neighbor[1])
+            openList.remove(neighbor)
 
-    while not open_set.empty():
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                pg.quit()
+    def __str__(self, curr):
+        string = ''
+        for x in range(len(self.graph)):
+            for y in range(len(self.graph[x])):
+                if self.graph[x][y] == curr:
+                    string = string + " * "
+                elif self.graph[x][y].blocked == False:
+                    string = string + ' 1 '
+                else:
+                    string = string + ' 0 '
+            string = string + '\n'
+        return string
 
-        current = open_set.get()[2]
-        open_set_hash.remove(current)
+    def draw_blocks(self, s, g): #curr
+        for x in range(len(self.graph)):
+            for y in range(len(self.graph[x])):
+                if self.graph[x][y] == s:
+                    self.graph[x][y].color_start()
+                    self.graph[x][y].draw(WIN)
+                elif self.graph[x][y] == g:
+                    self.graph[x][y].color_goal()
+                    self.graph[x][y].draw(WIN)
+                # if self.graph[x][y] == curr:
+                #     self.graph[x][y].color_curr()
+                #     self.graph[x][y].draw(WIN)
+                elif self.graph[x][y].blocked == True:
+                    self.graph[x][y].color_blocked()
+                    self.graph[x][y].draw(WIN)
+                # else:
+                #     self.graph[x][y].color_blocked()
+                #     self.graph[x][y].draw(WIN)
 
-        if current == end:
-            reconstruct_path(last, end, draw)
-            end.make_end()
-            return True
-        for neighbor in current.neighbors:
-            temp_g = g[current] + 1
-
-            if temp_g < g[neighbor]:
-                last[neighbor] = current
-                g[neighbor] = temp_g
-                f[neighbor] = temp_g + h(neighbor.get_pos(), end.get_pos())
-                if neighbor not in open_set_hash:
-                    count += 1
-                    open_set.put((f[neighbor], count, neighbor))
-                    open_set_hash.add(neighbor)
-                    neighbor.make_open()
-
-        draw()
-
-        if current != start:
-            current.make_closed()
-
-    return False
+    def draw_final_path(self, fpath):
+        pass
 
 
-#store nodes in lists and append to rows of grid
-def make_grid(rows, width):
-    alg_folder = path.dirname(__file__)
-    map_data = []
-    grid = []
-    gap = width // rows
-    with open(path.join(alg_folder, MAPFILE), 'rt') as f:
-        for line in f:
-            map_data.append(line)
+#returns a random unblocked node in the graph
+def selectRandomNode(graph):
+    x = random.randint(0, ROWS-1) #100
+    y = random.randint(0, COLS-1) #100
+    start = graph.graph[x][y]
+    start.x = x
+    start.y = y
+    if start.blocked:
+        start = selectRandomNode(graph)
+    return start
 
-    # for i in range(rows):
-    #     grid.append([])
-    #     for j in range(rows):
-    #         node = Node(i, j, gap, rows)
-    #         grid[i].append(node)
+#checks all neighbors of the given node. If they are blocked, sets them to visiblyBlocked = True
+def setNeighborsToVisiblyBlocked(node, graph):
+    xOffsets = [1, -1, 0, 0]
+    yOffsets = [0, 0, 1, -1]
+    for i in range(4):
+        x = node.x + xOffsets[i]
+        y = node.y + yOffsets[i]
+        if x >= 0 and x < ROWS and y >= 0 and y < COLS and graph[x][y].blocked:
+            graph[x][y].visiblyBlocked = True
 
-    for i, blocks in enumerate(map_data):
-        print(i, blocks)
-        grid.append([])
-        for j, block in enumerate(blocks):
-            if block == 'X':
-                node = Node(i, j, gap, rows)
-                grid[i].append(node)
-                node.make_barrier()
-            else:
-                node = Node(i, j, gap, rows)
-                grid[i].append(node)
+def computePath(graph, goal, openList, visited, counter, start):
+    while openList:
+        curr = heapq.heappop(openList)
+        visited.add(curr)
 
-    return grid
+        if(curr == goal):
+            break
+
+        #find neighbors and compute g cost
+        xOffsets = [1, -1, 0, 0]
+        yOffsets = [0, 0, 1, -1]
+        for i in range(4):
+            x = curr.x + xOffsets[i]
+            y = curr.y + yOffsets[i]
+
+            if x >= 0 and x < len(graph) and y >= 0 and y < len(graph) and not graph[x][y].visiblyBlocked and not graph[x][y] in visited:
+                neighbor = graph[x][y]
+                if neighbor.search < counter:
+                    neighbor.search = counter
+                    neighbor.g = math.inf
+                if neighbor in openList:
+                    # figure out if you need to update the f score
+                    newG = curr.g + 1
+                    if (newG) < (neighbor.g):
+                        neighbor.g = newG
+                        neighbor.prev = curr
+                        heapq.heapify(openList)
+                else:
+                    neighbor.g = curr.g + 1
+                    neighbor.prev = curr
+                    heapq.heappush(openList, neighbor)
+    path = []
+    while(curr != start):
+        path.insert(0, (curr.x, curr.y))
+        curr = curr.prev
+    return path
+
+def draw_final_path(win, graph, fpath):
+    for x in range(len(graph.graph)):
+        for y in range(len(graph.graph[x])):
+            for i, j in fpath:
+                if i == x and j == y:
+                    graph.graph[x][y].color_finalpath()
+                    graph.graph[x][y].draw(win)
+
+
 
 def draw_grid(win, rows, width):
     gap = width // rows
-    for i in range(rows):
+    for i in range(rows+1):
         pg.draw.line(win, GREY, (0, i * gap), (width, i *gap))
-        for j in range(rows):
+        for j in range(rows+1):
             pg.draw.line(win, GREY, (j * gap, 0), (j *gap, width))
 
-def draw(win, grid, rows, width):
+def draw(win, rows, width, graph, s, g): #curr
     #fill screen
     win.fill(WHITE)
     #draw a rect with color
-    for row in grid:
-        for node in row:
-            node.draw(win)
+    graph.draw_blocks(s, g) #curr
     #draw grid lines
     draw_grid(win, rows, width)
-
     pg.display.update()
 
-
-def get_clicked_pos(pos, rows, width):
-    gap = width // rows
-    y, x = pos
-
-    row = y // gap
-    col = x // gap
-
-    return row, col
-
 def main(win, width):
-    #ROWS = 101
-    grid = make_grid(ROWS, width)
 
-    start = None
-    end = None
+    counter = 0
+    graph = Graph(ROWS, COLS)
+    #Select start node randomly
+    start = selectRandomNode(graph)
+    #Select goal node randomly
+    goal = selectRandomNode(graph)
+    #initialize finalPath List, add start to it
+    finalPath = []
+    finalPath.append((start.x, start.y))
 
+    #print start and goal coordinates
+    print('start = (' + str(start.x) + ', ' + str(start.y) + ')')
+    print('goal = (' + str(goal.x) + ', ' + str(goal.y) + ')')
+
+    for i in range(len(graph.graph)):
+        for j in range(len(graph.graph[i])):
+            manhattanDist = abs(i - goal.x) + abs(j - goal.y)
+            graph.graph[i][j].h = manhattanDist
+            graph.graph[i][j].x = i
+            graph.graph[i][j].y = j
+
+    draw(win, ROWS, width, graph, start, goal) #start
+    pg.event.clear()
     run = True
     while run:
-        draw(win, grid, ROWS, width)
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                run = False
+        draw(win, ROWS, width, graph, start, goal) #start
+        clock.tick(1)
 
-            #if left mouse button is pressed
-            if pg.mouse.get_pressed()[0]:
-                #gives x, y coordinate of mouse position
-                pos = pg.mouse.get_pos()
-                row, col = get_clicked_pos(pos, ROWS, width)
-                node = grid[row][col]
+        #pg.display.update() // take this out of draw funtction
+        event = pg.event.wait()
+        if event.type == pg.QUIT:
+            run = False
 
-                if not start and node != end:
-                    if node.is_barrier() == True:
-                        start = None
+        elif event.type == pg.KEYDOWN:
+            if event.key == pg.K_SPACE:
+                while start != goal:
+                    setNeighborsToVisiblyBlocked(start, graph.graph)
+                    counter = counter + 1
+                    start.g = 0
+                    start.search = counter
+                    goal.search = counter
+                    goal.g = math.inf
+                    openList = []
+                    visited = set()
+                    openList.append(start)
+                    path = computePath(graph.graph, goal, openList, visited, counter, start)
+                    #move start along the computed path, ensure that there are no blocked nodes
+                    # if there are blocked nodes, compute a new path with start set to the furthest unblocked node
+                    for i in range(len(path)):
+                        start = graph.graph[path[i][0]][path[i][1]]
+                        #draw final path to pygame window
+                        graph.graph[path[i][0]][path[i][1]].color_finalpath()
+                        graph.graph[path[i][0]][path[i][1]].draw(win)
+                        pg.display.update()
+                        if start.blocked:
+                            start = graph.graph[path[i - 1][0]][path[i - 1][1]]
+                            break
+                        setNeighborsToVisiblyBlocked(start, graph.graph)
+                        finalPath.append((start.x, start.y))
 
-                    else:
-                        start = node
-                        start.make_start()
-
-                if not end and node != start:
-                    if node.is_barrier() == True:
-                        end = None
-
-                    else:
-                        end = node
-                        end.make_end()
-
-            if event.type == pg.KEYDOWN:
-                if event.key == pg.K_SPACE and start and end:
-                    for row in grid:
-                        for node in row:
-                            node.update_neighbors(grid)
-                    algorithm(lambda: draw(win, grid, ROWS, width), grid, start, end)
-                #reset program
-                if event.key == pg.K_r:
-                    start = None
-                    end = None
-                    grid = make_grid(ROWS,width)
 
     pg.quit()
+
+    print(graph.__str__(start))
+    print('\n')
+    print(finalPath)
 
 main(WIN, WIDTH)
