@@ -116,6 +116,7 @@ def testAStar(graph, goal, openList, visited, counter, start):
                     neighbor.g = curr.g + 1
                     neighbor.prev = curr
                     heapq.heappush(openList, neighbor)
+
     path = []
     while(curr != start):
         path.insert(0, (curr.x, curr.y))
@@ -123,7 +124,6 @@ def testAStar(graph, goal, openList, visited, counter, start):
     return path
 
 def repeatedForwardsAlgo(graph, start, goal):
-
     counter = 0
     #initialize finalPath List, add start to it
     finalPath = []
@@ -135,6 +135,8 @@ def repeatedForwardsAlgo(graph, start, goal):
 
     #initialize hValues
     setHValues(graph.graph, goal)
+
+    nodesExpanded = 0
 
     while start != goal:
         setNeighborsToVisiblyBlocked(start, graph.graph)
@@ -160,11 +162,16 @@ def repeatedForwardsAlgo(graph, start, goal):
                 break
             setNeighborsToVisiblyBlocked(start, graph.graph)
             finalPath.append((start.x, start.y))
+        
+        nodesExpanded = len(visited)
     #remove any duplicates, print the length, print the final path
     removePathDuplicates(finalPath)
     printBlocked(finalPath, graph.graph)
     print('\n')
     print(len(finalPath))
+    print('\n')
+    print('nodes expanded')
+    print(nodesExpanded)
     print('\n')
     print(finalPath)
 
@@ -216,3 +223,60 @@ def repeatedBackwardsAlgo(graph, start, goal):
     print(len(finalPath))
     print('\n')
     print(finalPath)
+
+def adaptiveAlgorithm(graph, start, goal):
+    counter = 0
+    #initialize finalPath List, add start to it
+    finalPath = []
+    finalPath.append((start.x, start.y))
+
+    #print start and goal coordinates
+    print('start = (' + str(start.x) + ', ' + str(start.y) + ')')
+    print('goal = (' + str(goal.x) + ', ' + str(goal.y) + ')')
+
+    #initialize hValues
+    setHValues(graph.graph, goal)
+
+    nodesExpanded = 0
+
+    while start != goal:
+        setNeighborsToVisiblyBlocked(start, graph.graph)
+        counter = counter + 1
+        start.g = 0
+        start.search = counter
+        goal.search = counter
+        goal.g = math.inf
+        openList = []
+        visited = set()
+        openList.append(start)
+        path = computePath(graph.graph, goal, openList, visited, counter, start)
+        #check if goal is unreachable by checking if goal is on the path
+        if (goal.x, goal.y) not in path:
+            print('UNREACHABLE')
+            return
+        #update the expanded nodes' heuristics
+        for node in visited:
+            node.h = goal.g - node.g
+
+        #move start along the computed path, ensure that there are no blocked nodes
+        # if there are blocked nodes, compute a new path with start set to the furthest unblocked node
+        for i in range(len(path)):
+            start = graph.graph[path[i][0]][path[i][1]]
+            if start.blocked:
+                start = graph.graph[path[i - 1][0]][path[i - 1][1]]
+                break
+            setNeighborsToVisiblyBlocked(start, graph.graph)
+            finalPath.append((start.x, start.y))
+        
+        nodesExpanded = len(visited)
+    #remove any duplicates, print the length, print the final path
+    removePathDuplicates(finalPath)
+    printBlocked(finalPath, graph.graph)
+    print('\n')
+    print(len(finalPath))
+    print('\n')
+    print('nodes expanded')
+    print(nodesExpanded)
+    print('\n')
+    print(finalPath)
+

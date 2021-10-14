@@ -1,5 +1,14 @@
 from PathFinder import PathFinder
+from Algorithms import testAStar, setHValues, printBlocked
+import math
 
-pathFinder = PathFinder()
-pathFinder.repeatedForward()
-pathFinder.repeatedBackward()
+
+path = PathFinder()
+path.repeatedForward()
+
+
+print('\n')
+path.graph.resetNodes()
+path.repeatedBackward()
+print('\n')
+path.adaptiveAlgorithm()
