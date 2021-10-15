@@ -12,11 +12,21 @@ class Node:
         self.y = None
         self.prev = None
         self.search = 0
+        self.gFlag = False
 
     def __lt__(self, other):
 
         if self.g + self.h == other.g + other.h:
-            return self.g < other.g
+            #if g value is equal, break tie randomly
+            if self.g == other.g:
+                if random.random() < 0.5:
+                    return True
+                else:
+                    return False
+            if not self.gFlag:
+                return self.g > other.g
+            else:
+                return self.g < other.g
         else:
             return self.g + self.h < other.g + other.h
 
@@ -35,6 +45,12 @@ class Graph:
             for j in range(len(self.graph[i])):
                 self.graph[i][j].visiblyBlocked = False
                 self.graph[i][j].search = 0
+    
+    #
+    def setGFlags(self):
+        for i in range(len(self.graph)):
+            for j in range(len(self.graph[i])):
+                self.graph[i][j].gFlag = True
 
     def DFS(self):
         for x in range(len(self.graph)):
@@ -94,11 +110,10 @@ class Graph:
 def create50graphs():
     #loop x50
     #for each iteration, call createGraph() and append the result to a file
-    file = open('graph.txt', 'a')
-    for x in range(5):
-        graph = Graph(10, 10)
-        file.write(graph.__str__(None))
-        file.write('\n')
-    file.close()
+    graphs = []
+    for x in range(50):
+        graph = Graph(101, 101)
+        graphs.append(graph)
+    return graphs
 
 create50graphs()

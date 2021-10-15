@@ -130,9 +130,10 @@ def repeatedForwardsAlgo(graph, start, goal):
     finalPath.append((start.x, start.y))
 
     #print start and goal coordinates
+    """"
     print('start = (' + str(start.x) + ', ' + str(start.y) + ')')
     print('goal = (' + str(goal.x) + ', ' + str(goal.y) + ')')
-
+    """
     #initialize hValues
     setHValues(graph.graph, goal)
 
@@ -163,8 +164,10 @@ def repeatedForwardsAlgo(graph, start, goal):
             setNeighborsToVisiblyBlocked(start, graph.graph)
             finalPath.append((start.x, start.y))
         
-        nodesExpanded = len(visited)
+        nodesExpanded += len(visited)
     #remove any duplicates, print the length, print the final path
+    return nodesExpanded
+    """"
     removePathDuplicates(finalPath)
     printBlocked(finalPath, graph.graph)
     print('\n')
@@ -174,16 +177,19 @@ def repeatedForwardsAlgo(graph, start, goal):
     print(nodesExpanded)
     print('\n')
     print(finalPath)
-
+    """
 def repeatedBackwardsAlgo(graph, start, goal):
     counter = 0
-    #initialize finalPath List, add goal to it
+    #initialize finalPath List, add start to it
     finalPath = []
     finalPath.append((start.x, start.y))
 
     #print start and goal coordinates
+    """"
     print('start = (' + str(start.x) + ', ' + str(start.y) + ')')
     print('goal = (' + str(goal.x) + ', ' + str(goal.y) + ')')
+    """
+    nodesExpanded = 0
 
     while start != goal:
         #initialize (or recompute) hValues
@@ -216,13 +222,18 @@ def repeatedBackwardsAlgo(graph, start, goal):
                 break
             setNeighborsToVisiblyBlocked(start, graph.graph)
             finalPath.append((start.x, start.y))
+
+        nodesExpanded += len(visited)
+    return nodesExpanded
     #remove any duplicates, print the length, print the final path
+    """"
     removePathDuplicates(finalPath)
     printBlocked(finalPath, graph.graph)
     print('\n')
     print(len(finalPath))
     print('\n')
     print(finalPath)
+    """
 
 def adaptiveAlgorithm(graph, start, goal):
     counter = 0
