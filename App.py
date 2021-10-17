@@ -1,5 +1,6 @@
+from Algorithms import setHValues, consistencyTest
 from PathFinder import PathFinder
-from Graph import create50graphs
+from Graph import Graph, create50graphs
 
 #Question 2
 def q2():
@@ -49,15 +50,34 @@ def q3():
     print("Forwards Average Expanded Nodes = {:.2f}".format(forwardsAverage))
     print("Backwards Average Expanded Nodes = {:.2f}".format(backwardsAverage))
 
-""""
-path = PathFinder()
-path.repeatedForward()
+def q4():
+    pathFinder = PathFinder()
+    pathFinder.adaptiveAlgorithm()
+    print("running consistency test")
+    print(consistencyTest(pathFinder.graph.graph))
 
+def q5():
+    graphs = create50graphs()
+    forwardValues = []
+    adaptiveValues= []
 
-print('\n')
-path.graph.resetNodes()
-path.repeatedBackward()
-print('\n')
-path.adaptiveAlgorithm()
-"""
-q3()
+    for graph in graphs:
+        path = PathFinder(graph)
+        adaptive = path.adaptiveAlgorithm()
+
+        if adaptive is not None:
+            adaptiveValues.append(adaptive)
+        
+        path.graph.resetNodes()
+        
+        forward = path.repeatedForward()
+        if forward is not None:
+            forwardValues.append(forward)
+
+    forwardAverage = sum(forwardValues) / 50
+    adaptiveAverage = sum(adaptiveValues) / 50
+
+    print("Forwards Average Expanded Nodes = {:.2f}".format(forwardAverage))
+    print("Adaptive Average Expanded Nodes = {:.2f}".format(adaptiveAverage))
+
+q5()

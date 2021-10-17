@@ -1,5 +1,5 @@
 from Graph import Graph
-from Algorithms import selectRandomNode, repeatedForwardsAlgo, repeatedBackwardsAlgo, adaptiveAlgorithm
+from Algorithms import selectRandomNode, repeatedForwardsAlgo, repeatedBackwardsAlgo, adaptiveAlgo, setHValues
 import math
 
 class PathFinder:
@@ -9,10 +9,15 @@ class PathFinder:
         self.start = selectRandomNode(self.graph)
         self.goal = selectRandomNode(self.graph)
     
+    '''''
     def __init__(self, graph):
-        self.graph = graph
-        self.start = selectRandomNode(self.graph)
-        self.goal = selectRandomNode(self.graph)
+       self.graph = graph
+       self.start = selectRandomNode(self.graph)
+       self.goal = selectRandomNode(self.graph)
+    '''''
+    
+    def setHeuristics(self):
+        setHValues(self.graph.graph, self.goal)
 
     def repeatedForward(self):
         return repeatedForwardsAlgo(self.graph, self.start, self.goal)
@@ -21,7 +26,7 @@ class PathFinder:
         return repeatedBackwardsAlgo(self.graph, self.start, self.goal)
 
     def adaptiveAlgorithm(self):
-        adaptiveAlgorithm(self.graph, self.start, self.goal)
+        return adaptiveAlgo(self.graph, self.start, self.goal)
 
 
 

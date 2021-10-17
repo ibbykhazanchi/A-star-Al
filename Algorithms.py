@@ -1,4 +1,3 @@
-from Graph import Node, Graph
 import heapq, math
 import random
 
@@ -129,11 +128,6 @@ def repeatedForwardsAlgo(graph, start, goal):
     finalPath = []
     finalPath.append((start.x, start.y))
 
-    #print start and goal coordinates
-    """"
-    print('start = (' + str(start.x) + ', ' + str(start.y) + ')')
-    print('goal = (' + str(goal.x) + ', ' + str(goal.y) + ')')
-    """
     #initialize hValues
     setHValues(graph.graph, goal)
 
@@ -167,28 +161,12 @@ def repeatedForwardsAlgo(graph, start, goal):
         nodesExpanded += len(visited)
     #remove any duplicates, print the length, print the final path
     return nodesExpanded
-    """"
-    removePathDuplicates(finalPath)
-    printBlocked(finalPath, graph.graph)
-    print('\n')
-    print(len(finalPath))
-    print('\n')
-    print('nodes expanded')
-    print(nodesExpanded)
-    print('\n')
-    print(finalPath)
-    """
 def repeatedBackwardsAlgo(graph, start, goal):
     counter = 0
     #initialize finalPath List, add start to it
     finalPath = []
     finalPath.append((start.x, start.y))
 
-    #print start and goal coordinates
-    """"
-    print('start = (' + str(start.x) + ', ' + str(start.y) + ')')
-    print('goal = (' + str(goal.x) + ', ' + str(goal.y) + ')')
-    """
     nodesExpanded = 0
 
     while start != goal:
@@ -225,25 +203,12 @@ def repeatedBackwardsAlgo(graph, start, goal):
 
         nodesExpanded += len(visited)
     return nodesExpanded
-    #remove any duplicates, print the length, print the final path
-    """"
-    removePathDuplicates(finalPath)
-    printBlocked(finalPath, graph.graph)
-    print('\n')
-    print(len(finalPath))
-    print('\n')
-    print(finalPath)
-    """
 
-def adaptiveAlgorithm(graph, start, goal):
+def adaptiveAlgo(graph, start, goal):
     counter = 0
     #initialize finalPath List, add start to it
     finalPath = []
     finalPath.append((start.x, start.y))
-
-    #print start and goal coordinates
-    print('start = (' + str(start.x) + ', ' + str(start.y) + ')')
-    print('goal = (' + str(goal.x) + ', ' + str(goal.y) + ')')
 
     #initialize hValues
     setHValues(graph.graph, goal)
@@ -279,15 +244,30 @@ def adaptiveAlgorithm(graph, start, goal):
             setNeighborsToVisiblyBlocked(start, graph.graph)
             finalPath.append((start.x, start.y))
         
-        nodesExpanded = len(visited)
-    #remove any duplicates, print the length, print the final path
-    removePathDuplicates(finalPath)
-    printBlocked(finalPath, graph.graph)
-    print('\n')
-    print(len(finalPath))
-    print('\n')
-    print('nodes expanded')
-    print(nodesExpanded)
-    print('\n')
-    print(finalPath)
+        nodesExpanded += len(visited)
+    return nodesExpanded
+
+def consistencyTest(graph):
+    # iterate through entire grid
+    for i in range(len(graph)):
+        for j in range(len(graph[i])):
+            # mark current node
+            curr = graph[i][j]
+
+            xOffsets = [1, -1, 0, 0]
+            yOffsets = [0, 0, 1, -1]
+            for i in range(4):
+                x = curr.x + xOffsets[i]
+                y = curr.y + yOffsets[i]
+
+                if x >= 0 and x < len(graph) and y >= 0 and y < len(graph):
+                    # mark neighboring node
+                    neighbor = graph[x][y]
+
+                    # check if triangle inequality doesn't hold
+                    if curr.h > neighbor.h + 1:
+                        return False
+    
+    # triangle inequality holds
+    return True
 
