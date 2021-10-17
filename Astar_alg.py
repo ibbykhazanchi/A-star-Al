@@ -41,6 +41,9 @@ class Node:
         self.width = width
         self.color = None
 
+    def color_open(self):
+        self.color = TURQUOISE
+
     def color_finalpath(self):
         self.color = PURPLE
 
@@ -199,6 +202,7 @@ def computePath(graph, goal, openList, visited, counter, start):
                         neighbor.g = newG
                         neighbor.prev = curr
                         heapq.heapify(openList)
+                        neighbor.color_open()
                 else:
                     neighbor.g = curr.g + 1
                     neighbor.prev = curr
