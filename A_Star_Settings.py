@@ -14,6 +14,8 @@ LIGHTGREY = (100, 100, 100)
 TURQUOISE = (64, 224, 208)
 DARK_CHAR = (69,139,0)
 DEEP_PINK = (255,20,147)
+D_BLUE = (28,134,238)
+SKY_BLUE = (0,191,255)
 
 FPS = 10 #set frames per second
 WIDTH = 950 #pygame window width

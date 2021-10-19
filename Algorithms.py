@@ -57,7 +57,13 @@ def printBlocked(path, graph):
 
 #main A* algo, used by both repeatedForwards and repeatedBackwards
 def computePath(draw, num, graph, goal, openList, visited, counter, start):
+    # color = [BLUE, D_BLUE, SKY_BLUE]
+    # counter = 0
     while openList:
+        # if counter == 2:
+        #     counter = 0
+
+        # choice = color[counter]
         curr = heapq.heappop(openList)
         visited.add(curr)
 
@@ -87,6 +93,15 @@ def computePath(draw, num, graph, goal, openList, visited, counter, start):
                     neighbor.g = curr.g + 1
                     neighbor.prev = curr
                     heapq.heappush(openList, neighbor)
+                    # if neighbor.color != RED and neighbor.color != GREEN and neighbor.color != PURPLE and neighbor.color != ORANGE and neighbor.color != TURQUOISE and neighbor.blocked == False:
+                    #     if num == 1:
+                    #         neighbor.color = choice
+                    #     if num == 2:
+                    #         neighbor.is_cpath_backward()
+                    #     if num == 3:
+                    #         neighbor.is_cpath_adaptive()
+                    #     draw()
+        # counter +=1
     path = []
     while(curr != start):
         path.insert(0, (curr.x, curr.y))
@@ -99,6 +114,7 @@ def computePath(draw, num, graph, goal, openList, visited, counter, start):
             if num == 3:
                 curr.is_cpath_adaptive()
             draw()
+        # counter +=1
     return path
 
 #test A-star algo that does not repeat and has full knowledge of the environment from the get-go
