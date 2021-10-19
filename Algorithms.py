@@ -4,8 +4,6 @@ import pygame as pg
 import heapq, math
 import random
 
-pg.font.init()
-myfont = pg.font.SysFont(FONT, FONT_SIZE, True)
 
 #returns a random unblocked node in the graph
 def selectRandomNode(graph):
@@ -25,7 +23,7 @@ def setNeighborsToVisiblyBlocked(node, graph):
     for i in range(4):
         x = node.x + xOffsets[i]
         y = node.y + yOffsets[i]
-        if x >= 0 and x < 101 and y >= 0 and y < 101 and graph[x][y].blocked:
+        if x >= 0 and x < GRID_DIM and y >= 0 and y < GRID_DIM and graph[x][y].blocked:
             graph[x][y].visiblyBlocked = True
             graph[x][y].is_visibly_blocked()
 
@@ -58,8 +56,7 @@ def printBlocked(path, graph):
             print('BLOCKED')
 
 #main A* algo, used by both repeatedForwards and repeatedBackwards
-def computePath(graph, goal, openList, visited, counter, start):
-    goal_one = goal
+def computePath(draw, num, graph, goal, openList, visited, counter, start):
     while openList:
         curr = heapq.heappop(openList)
         visited.add(curr)
@@ -89,17 +86,19 @@ def computePath(graph, goal, openList, visited, counter, start):
                 else:
                     neighbor.g = curr.g + 1
                     neighbor.prev = curr
-                    # if neighbor.blocked == False:
-                    #     neighbor.is_expanded()
-                    # elif neighbor.goal != goal_one:
-                    #     neighbor.is_expanded()
-                    # elif neighbor.start != start:
-                    #     neighbor.is_expanded()
                     heapq.heappush(openList, neighbor)
     path = []
     while(curr != start):
         path.insert(0, (curr.x, curr.y))
         curr = curr.prev
+        if curr.color != RED and curr.color != GREEN and curr.color != PURPLE and curr.color != ORANGE and curr.color != TURQUOISE and curr.blocked == False:
+            if num == 1:
+                curr.is_cpath_forward()
+            if num == 2:
+                curr.is_cpath_backward()
+            if num == 3:
+                curr.is_cpath_adaptive()
+            draw()
     return path
 
 #test A-star algo that does not repeat and has full knowledge of the environment from the get-go
@@ -141,15 +140,11 @@ def testAStar(graph, goal, openList, visited, counter, start):
         curr = curr.prev
     return path
 
-def repeatedForwardsAlgo(draw, graph, start, goal):
+def repeatedForwardsAlgo(draw, num, graph, start, goal):
     counter = 0
     #initialize finalPath List, add start to it
     finalPath = []
     finalPath.append((start.x, start.y))
-
-    #print start and goal coordinates
-    print('start = (' + str(start.x) + ', ' + str(start.y) + ')')
-    print('goal = (' + str(goal.x) + ', ' + str(goal.y) + ')')
 
     #initialize hValues
     setHValues(graph.graph, goal)
@@ -166,16 +161,18 @@ def repeatedForwardsAlgo(draw, graph, start, goal):
         openList = []
         visited = set()
         openList.append(start)
-        path = computePath(graph.graph, goal, openList, visited, counter, start)
+        path = computePath(lambda: draw(), num, graph.graph, goal, openList, visited, counter, start)
         #check if goal is unreachable by checking if goal is on the path
         if (goal.x, goal.y) not in path:
             print('UNREACHABLE')
             return
         #move start along the computed path, ensure that there are no blocked nodes
         # if there are blocked nodes, compute a new path with start set to the furthest unblocked node
-        p_count = 0
         for i in range(len(path)):
             start = graph.graph[path[i][0]][path[i][1]]
+            if graph.graph[path[i][0]][path[i][1]].color != GREEN and graph.graph[path[i][0]][path[i][1]].color != RED:
+                start.is_forward_path()
+                draw()
             if start.blocked:
                 start = graph.graph[path[i - 1][0]][path[i - 1][1]]
                 break
@@ -183,32 +180,15 @@ def repeatedForwardsAlgo(draw, graph, start, goal):
             setNeighborsToVisiblyBlocked(start, graph.graph)
             finalPath.append((start.x, start.y))
 
-            if graph.graph[path[i][0]][path[i][1]] != start or graph.graph[path[i][0]][path[i][1]] != goal:
-                start.is_forward_path()
-                draw()
-
         nodesExpanded += len(visited)
-    return nodesExpanded
-    #remove any duplicates, print the length, print the final path
-    removePathDuplicates(finalPath)
-    printBlocked(finalPath, graph.graph)
-    print('\n')
-    print(len(finalPath))
-    print('\n')
-    print('nodes expanded')
-    print(nodesExpanded)
-    print('\n')
-    print(finalPath)
 
-def repeatedBackwardsAlgo(draw, graph, start, goal):
+    return nodesExpanded
+
+def repeatedBackwardsAlgo(draw, num, graph, start, goal):
     counter = 0
     #initialize finalPath List, add start to it
     finalPath = []
     finalPath.append((start.x, start.y))
-
-    #print start and goal coordinates
-    print('start = (' + str(start.x) + ', ' + str(start.y) + ')')
-    print('goal = (' + str(goal.x) + ', ' + str(goal.y) + ')')
 
     nodesExpanded = 0
 
@@ -225,7 +205,7 @@ def repeatedBackwardsAlgo(draw, graph, start, goal):
         openList = []
         visited = set()
         openList.append(goal)
-        path = computePath(graph.graph, start, openList, visited, counter, goal)
+        path = computePath(lambda: draw(), num, graph.graph, start, openList, visited, counter, goal)
         #check if goal is unreachable by checking if start is on the path
         if (start.x, start.y) not in path:
             print('UNREACHABLE')
@@ -244,29 +224,18 @@ def repeatedBackwardsAlgo(draw, graph, start, goal):
             setNeighborsToVisiblyBlocked(start, graph.graph)
             finalPath.append((start.x, start.y))
 
-            if graph.graph[path[i][0]][path[i][1]] != start or graph.graph[path[i][0]][path[i][1]] != goal:
+            if graph.graph[path[i][0]][path[i][1]].color != GREEN and graph.graph[path[i][0]][path[i][1]].color != RED:
                 start.is_backward_path()
                 draw()
 
         nodesExpanded += len(visited)
     return nodesExpanded
-    #remove any duplicates, print the length, print the final path
-    removePathDuplicates(finalPath)
-    printBlocked(finalPath, graph.graph)
-    print('\n')
-    print(len(finalPath))
-    print('\n')
-    print(finalPath)
 
-def adaptiveAlgorithm(draw, graph, start, goal):
+def adaptiveAlgorithm(draw, num, graph, start, goal):
     counter = 0
     #initialize finalPath List, add start to it
     finalPath = []
     finalPath.append((start.x, start.y))
-
-    #print start and goal coordinates
-    print('start = (' + str(start.x) + ', ' + str(start.y) + ')')
-    print('goal = (' + str(goal.x) + ', ' + str(goal.y) + ')')
 
     #initialize hValues
     setHValues(graph.graph, goal)
@@ -283,7 +252,7 @@ def adaptiveAlgorithm(draw, graph, start, goal):
         openList = []
         visited = set()
         openList.append(start)
-        path = computePath(graph.graph, goal, openList, visited, counter, start)
+        path = computePath(lambda: draw(), num, graph.graph, goal, openList, visited, counter, start)
         #check if goal is unreachable by checking if goal is on the path
         if (goal.x, goal.y) not in path:
             print('UNREACHABLE')
@@ -302,19 +271,9 @@ def adaptiveAlgorithm(draw, graph, start, goal):
             setNeighborsToVisiblyBlocked(start, graph.graph)
             finalPath.append((start.x, start.y))
 
-            if graph.graph[path[i][0]][path[i][1]] != start or graph.graph[path[i][0]][path[i][1]] != goal:
+            if graph.graph[path[i][0]][path[i][1]].color != GREEN and graph.graph[path[i][0]][path[i][1]].color != RED:
                 start.is_adaptive_path()
                 draw()
 
         nodesExpanded += len(visited)
     return nodesExpanded
-    #remove any duplicates, print the length, print the final path
-    removePathDuplicates(finalPath)
-    printBlocked(finalPath, graph.graph)
-    print('\n')
-    print(len(finalPath))
-    print('\n')
-    print('nodes expanded')
-    print(nodesExpanded)
-    print('\n')
-    print(finalPath)

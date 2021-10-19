@@ -19,6 +19,18 @@ class Node:
         self.dim = dim
         self.color = WHITE
 
+    def reset(self):
+        self.color = WHITE
+
+    def is_cpath_forward(self):
+        self.color = BLUE
+
+    def is_cpath_backward(self):
+        self.color = DARK_CHAR
+
+    def is_cpath_adaptive(self):
+        self.color = DEEP_PINK
+
     def is_start(self):
         self.color = GREEN
 
