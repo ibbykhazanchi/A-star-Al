@@ -29,7 +29,7 @@ class Node:
         self.color = DARK_CHAR
 
     def is_cpath_adaptive(self):
-        self.color = DEEP_PINK
+        self.color = HOT_PINK
 
     def is_start(self):
         self.color = GREEN

@@ -19,7 +19,7 @@ cpath_forward = myfont.render('Computed Repeated Forward Path', False, BLUE)
 backward_prompt = myfont.render('Press "2" for Repeated Backward', False, ORANGE)
 cpath_backward = myfont.render('Computed Repeated Backward Path', False, DARK_CHAR)
 adaptive_prompt = myfont.render('Press "3" for Adaptive', False, TURQUOISE)
-cpath_adaptive = myfont.render('Computed Adaptive Path', False, DEEP_PINK)
+cpath_adaptive = myfont.render('Computed Adaptive Path', False, D_PINK)
 start_prompt = myfont.render('Start State', False, GREEN)
 goal_prompt = myfont.render('Goal State', False, RED)
 reset_prompt = myfont.render('Press "c" to reset grid', False, YELLOW)
@@ -48,10 +48,22 @@ def graphAsString(graph):
                 string = string + 'G'
             elif graph.graph[y][x].color == BLUE:
                 string = string + 'B'
+            elif graph.graph[y][x].color == D_BLUE:
+                string = string + 'D'
+            elif graph.graph[y][x].color == SKY_BLUE:
+                string = string + 'Y'
             elif graph.graph[y][x].color == DARK_CHAR:
                 string = string + 'C'
-            elif graph.graph[y][x].color == DEEP_PINK:
+            elif graph.graph[y][x].color == OLIVE:
+                string = string + 'E'
+            elif graph.graph[y][x].color == D_GREEN:
+                string = string + 'N'
+            elif graph.graph[y][x].color == HOT_PINK:
                 string = string + 'K'
+            elif graph.graph[y][x].color == D_PINK:
+                string = string + 'I'
+            elif graph.graph[y][x].color == VIOLET:
+                string = string + 'L'
             elif graph.graph[y][x].color == PURPLE:
                 string = string + 'P'
             elif graph.graph[y][x].color == ORANGE:
@@ -81,6 +93,18 @@ def loadGraph(graph, gFile):
                         graph.graph[j][i].is_goal()
                     elif node == 'B':
                         graph.graph[j][i].is_cpath_forward()
+                    elif node == 'D':
+                        graph.graph[j][i].color = D_BLUE
+                    elif node == 'Y':
+                        graph.graph[j][i].color = SKY_BLUE
+                    elif node == 'E':
+                        graph.graph[j][i].color = OLIVE
+                    elif node == 'N':
+                        graph.graph[j][i].color = D_GREEN
+                    elif node == 'I':
+                        graph.graph[j][i].color = D_PINK
+                    elif node == 'L':
+                        graph.graph[j][i].color = VIOLET
                     elif node == 'C':
                         graph.graph[j][i].is_cpath_backward()
                     elif node == 'K':

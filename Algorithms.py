@@ -56,14 +56,13 @@ def printBlocked(path, graph):
             print('BLOCKED')
 
 #main A* algo, used by both repeatedForwards and repeatedBackwards
-def computePath(draw, num, graph, goal, openList, visited, counter, start):
-    # color = [BLUE, D_BLUE, SKY_BLUE]
-    # counter = 0
-    while openList:
-        # if counter == 2:
-        #     counter = 0
+def computePath(draw, num, graph, goal, openList, visited, counter, start, c_count):
+    fColor = [BLUE, D_BLUE, SKY_BLUE]
+    bColor = [DARK_CHAR, OLIVE, D_GREEN]
+    aColor = [HOT_PINK, VIOLET, D_PINK]
 
-        # choice = color[counter]
+
+    while openList:
         curr = heapq.heappop(openList)
         visited.add(curr)
 
@@ -93,28 +92,21 @@ def computePath(draw, num, graph, goal, openList, visited, counter, start):
                     neighbor.g = curr.g + 1
                     neighbor.prev = curr
                     heapq.heappush(openList, neighbor)
-                    # if neighbor.color != RED and neighbor.color != GREEN and neighbor.color != PURPLE and neighbor.color != ORANGE and neighbor.color != TURQUOISE and neighbor.blocked == False:
-                    #     if num == 1:
-                    #         neighbor.color = choice
-                    #     if num == 2:
-                    #         neighbor.is_cpath_backward()
-                    #     if num == 3:
-                    #         neighbor.is_cpath_adaptive()
-                    #     draw()
-        # counter +=1
+                    if curr.color != RED and curr.color != GREEN and curr.color != PURPLE and curr.color != ORANGE and curr.color != TURQUOISE and curr.blocked == False:
+                        if num == 1:
+                            choice = fColor[c_count]
+                            curr.color = choice
+                        if num == 2:
+                            choice = bColor[c_count]
+                            curr.color = choice
+                        if num == 3:
+                            choice = aColor[c_count]
+                            curr.color = choice
+                        draw()
     path = []
     while(curr != start):
         path.insert(0, (curr.x, curr.y))
         curr = curr.prev
-        if curr.color != RED and curr.color != GREEN and curr.color != PURPLE and curr.color != ORANGE and curr.color != TURQUOISE and curr.blocked == False:
-            if num == 1:
-                curr.is_cpath_forward()
-            if num == 2:
-                curr.is_cpath_backward()
-            if num == 3:
-                curr.is_cpath_adaptive()
-            draw()
-        # counter +=1
     return path
 
 #test A-star algo that does not repeat and has full knowledge of the environment from the get-go
@@ -157,6 +149,7 @@ def testAStar(graph, goal, openList, visited, counter, start):
     return path
 
 def repeatedForwardsAlgo(draw, num, graph, start, goal):
+    c_counter = 0 #color counter
     counter = 0
     #initialize finalPath List, add start to it
     finalPath = []
@@ -177,7 +170,10 @@ def repeatedForwardsAlgo(draw, num, graph, start, goal):
         openList = []
         visited = set()
         openList.append(start)
-        path = computePath(lambda: draw(), num, graph.graph, goal, openList, visited, counter, start)
+        if c_counter == 3:
+            c_counter = 0
+        path = computePath(lambda: draw(), num, graph.graph, goal, openList, visited, counter, start, c_counter)
+        c_counter +=1
         #check if goal is unreachable by checking if goal is on the path
         if (goal.x, goal.y) not in path:
             print('UNREACHABLE')
@@ -201,6 +197,7 @@ def repeatedForwardsAlgo(draw, num, graph, start, goal):
     return nodesExpanded
 
 def repeatedBackwardsAlgo(draw, num, graph, start, goal):
+    c_counter = 0 #color counter
     counter = 0
     #initialize finalPath List, add start to it
     finalPath = []
@@ -221,7 +218,10 @@ def repeatedBackwardsAlgo(draw, num, graph, start, goal):
         openList = []
         visited = set()
         openList.append(goal)
-        path = computePath(lambda: draw(), num, graph.graph, start, openList, visited, counter, goal)
+        if c_counter == 3:
+            c_counter = 0
+        path = computePath(lambda: draw(), num, graph.graph, start, openList, visited, counter, goal, c_counter)
+        c_counter +=1
         #check if goal is unreachable by checking if start is on the path
         if (start.x, start.y) not in path:
             print('UNREACHABLE')
@@ -248,6 +248,7 @@ def repeatedBackwardsAlgo(draw, num, graph, start, goal):
     return nodesExpanded
 
 def adaptiveAlgorithm(draw, num, graph, start, goal):
+    c_counter = 0 #color counter
     counter = 0
     #initialize finalPath List, add start to it
     finalPath = []
@@ -268,7 +269,10 @@ def adaptiveAlgorithm(draw, num, graph, start, goal):
         openList = []
         visited = set()
         openList.append(start)
-        path = computePath(lambda: draw(), num, graph.graph, goal, openList, visited, counter, start)
+        if c_counter == 3:
+            c_counter = 0
+        path = computePath(lambda: draw(), num, graph.graph, goal, openList, visited, counter, start, c_counter)
+        c_counter +=1
         #check if goal is unreachable by checking if goal is on the path
         if (goal.x, goal.y) not in path:
             print('UNREACHABLE')
