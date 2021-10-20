@@ -92,21 +92,32 @@ def computePath(draw, num, graph, goal, openList, visited, counter, start, c_cou
                     neighbor.g = curr.g + 1
                     neighbor.prev = curr
                     heapq.heappush(openList, neighbor)
-                    if curr.color != RED and curr.color != GREEN and curr.color != PURPLE and curr.color != ORANGE and curr.color != TURQUOISE and curr.blocked == False:
-                        if num == 1:
-                            choice = fColor[c_count]
-                            curr.color = choice
-                        if num == 2:
-                            choice = bColor[c_count]
-                            curr.color = choice
-                        if num == 3:
-                            choice = aColor[c_count]
-                            curr.color = choice
-                        draw()
+                    # if curr.color != RED and curr.color != GREEN and curr.color != PURPLE and curr.color != ORANGE and curr.color != TURQUOISE and curr.blocked == False:
+                    #     if num == 1:
+                    #         choice = fColor[c_count]
+                    #         curr.color = choice
+                    #     if num == 2:
+                    #         choice = bColor[c_count]
+                    #         curr.color = choice
+                    #     if num == 3:
+                    #         choice = aColor[c_count]
+                    #         curr.color = choice
+                    #     draw()
     path = []
     while(curr != start):
         path.insert(0, (curr.x, curr.y))
         curr = curr.prev
+        if curr.color != RED and curr.color != GREEN and curr.color != PURPLE and curr.color != ORANGE and curr.color != TURQUOISE and curr.blocked == False:
+            if num == 1:
+                choice = fColor[c_count]
+                curr.color = choice
+            if num == 2:
+                choice = bColor[c_count]
+                curr.color = choice
+            if num == 3:
+                choice = aColor[c_count]
+                curr.color = choice
+            draw()
     return path
 
 #test A-star algo that does not repeat and has full knowledge of the environment from the get-go
