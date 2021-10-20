@@ -6,28 +6,29 @@ from os import path
 
 #initialize pygame
 pg.init()
-
+#set clock/ pygame window/ caption for window
 clock = pg.time.Clock()
 WIN = pg.display.set_mode((WIDTH, HEIGHT))
 pg.display.set_caption(TITLE)
-
+#initialize font display settings
 pg.font.init()
 myfont = pg.font.SysFont(FONT, FONT_SIZE, True)
-
+#set variables for all window prompts
 forward_prompt = myfont.render('Press "1" for Repeated Forward', False, PURPLE)
 cpath_forward = myfont.render('Computed Repeated Forward Path', False, BLUE)
 backward_prompt = myfont.render('Press "2" for Repeated Backward', False, ORANGE)
 cpath_backward = myfont.render('Computed Repeated Backward Path', False, DARK_CHAR)
 adaptive_prompt = myfont.render('Press "3" for Adaptive', False, TURQUOISE)
-cpath_adaptive = myfont.render('Computed Adaptive Path', False, D_PINK)
+cpath_adaptive = myfont.render('Computed Adaptive Path', False, HOT_PINK)
 start_prompt = myfont.render('Start State', False, GREEN)
 goal_prompt = myfont.render('Goal State', False, RED)
-reset_prompt = myfont.render('Press "c" to reset grid', False, YELLOW)
+clear_prompt = myfont.render('Press "c" to clear grid', False, YELLOW)
 load_forward = myfont.render('Press "f" to load Repeated Forward grid', False, PURPLE)
 load_backward = myfont.render('Press "b" to load Repeated Backward grid', False, ORANGE)
 load_adaptive = myfont.render('Press "a" to load Adaptive grid', False, TURQUOISE)
 expanded_prompt = myfont.render('Expanded Nodes:', False, WHITE)
 expanded_line = myfont.render('______________', False, WHITE)
+reset_prompt = myfont.render('Press "r" to reset/re-randomize grid, start and goal', False, WHITE)
 
 def make_prompt(n_exp, color):
     return myfont.render(str(n_exp), False, color)
@@ -46,24 +47,6 @@ def graphAsString(graph):
                 string = string + 'S'
             elif graph.graph[y][x].color == RED:
                 string = string + 'G'
-            elif graph.graph[y][x].color == BLUE:
-                string = string + 'B'
-            elif graph.graph[y][x].color == D_BLUE:
-                string = string + 'D'
-            elif graph.graph[y][x].color == SKY_BLUE:
-                string = string + 'Y'
-            elif graph.graph[y][x].color == DARK_CHAR:
-                string = string + 'C'
-            elif graph.graph[y][x].color == OLIVE:
-                string = string + 'E'
-            elif graph.graph[y][x].color == D_GREEN:
-                string = string + 'N'
-            elif graph.graph[y][x].color == HOT_PINK:
-                string = string + 'K'
-            elif graph.graph[y][x].color == D_PINK:
-                string = string + 'I'
-            elif graph.graph[y][x].color == VIOLET:
-                string = string + 'L'
             elif graph.graph[y][x].color == PURPLE:
                 string = string + 'P'
             elif graph.graph[y][x].color == ORANGE:
@@ -72,7 +55,7 @@ def graphAsString(graph):
                 string = string + 'T'
         string = string + '\n'
     return string
-
+#load graph saved in text file
 def loadGraph(graph, gFile):
     folder = path.dirname(__file__)
     map_data = []
@@ -91,37 +74,19 @@ def loadGraph(graph, gFile):
                         graph.graph[j][i].is_start()
                     elif node == 'G':
                         graph.graph[j][i].is_goal()
-                    elif node == 'B':
-                        graph.graph[j][i].is_cpath_forward()
-                    elif node == 'D':
-                        graph.graph[j][i].color = D_BLUE
-                    elif node == 'Y':
-                        graph.graph[j][i].color = SKY_BLUE
-                    elif node == 'E':
-                        graph.graph[j][i].color = OLIVE
-                    elif node == 'N':
-                        graph.graph[j][i].color = D_GREEN
-                    elif node == 'I':
-                        graph.graph[j][i].color = D_PINK
-                    elif node == 'L':
-                        graph.graph[j][i].color = VIOLET
-                    elif node == 'C':
-                        graph.graph[j][i].is_cpath_backward()
-                    elif node == 'K':
-                        graph.graph[j][i].is_cpath_adaptive()
                     elif node == 'P':
                         graph.graph[j][i].is_forward_path()
                     elif node == 'O':
                         graph.graph[j][i].is_backward_path()
                     elif node == 'T':
                         graph.graph[j][i].is_adaptive_path()
-
+#save string graph to txt file
 def saveGraph(graph, fName):
     file = open(fName, 'w')
     file.write(graphAsString(graph))
     file.write('\n')
     file.close()
-
+#rest graph to initial state (colors)
 def resetGraph(graph):
     for x in range(GRID_DIM):
         for y in range(GRID_DIM):
@@ -129,7 +94,7 @@ def resetGraph(graph):
                 graph.graph[x][y].is_blocked()
             elif graph.graph[x][y].blocked == False and graph.graph[x][y].color != GREEN and graph.graph[x][y].color != RED:
                 graph.graph[x][y].reset()
-
+#draw everything to window and update diplay
 def draw(win, gr, grid_dim, block_dim, win_dim, fps, fNode, bNode, aNode):
     win.fill(BG_COLOR)
     for x in range(len(gr.graph)):
@@ -137,6 +102,7 @@ def draw(win, gr, grid_dim, block_dim, win_dim, fps, fNode, bNode, aNode):
             gr.graph[y][x].draw_node(win)
 
     draw_grid(win, grid_dim, block_dim, win_dim)
+
     win.blit(forward_prompt,(610,10))
     win.blit(cpath_forward,(610,40))
     win.blit(backward_prompt,(610,70))
@@ -145,7 +111,7 @@ def draw(win, gr, grid_dim, block_dim, win_dim, fps, fNode, bNode, aNode):
     win.blit(cpath_adaptive,(610,160))
     win.blit(start_prompt,(610,190))
     win.blit(goal_prompt,(610,220))
-    win.blit(reset_prompt,(610,250))
+    win.blit(clear_prompt,(610,250))
     win.blit(load_forward,(610,280))
     win.blit(load_backward,(610,310))
     win.blit(load_adaptive,(610,340))
@@ -154,9 +120,11 @@ def draw(win, gr, grid_dim, block_dim, win_dim, fps, fNode, bNode, aNode):
     win.blit(fNode,(610,400))
     win.blit(bNode,(610,430))
     win.blit(aNode,(610,460))
+    win.blit(reset_prompt,(610,550))
+
     pg.display.update()
     clock.tick(fps)
-
+#draw grid lines
 def draw_grid(win, grid_dim, block_dim, win_dim):
     gap = block_dim
     for i in range(0, grid_dim):
@@ -165,6 +133,7 @@ def draw_grid(win, grid_dim, block_dim, win_dim):
             pg.draw.line(win, GREY, (j * gap, 0), (j *gap, win_dim))
 
 def main():
+    #clear old text files
     f = open(fileName1,"w")
     f.close()
     f = open(fileName2,"w")
@@ -174,49 +143,52 @@ def main():
     fNodes_expanded = 0
     bNodes_expanded = 0
     aNodes_expanded = 0
+    #initialize graph
     graph = Graph(GRID_DIM,GRID_DIM)
+    #set goal and start states
     start = selectRandomNode(graph)
     goal = selectRandomNode(graph)
 
     init_graph(graph)
     graph.draw_blocks(start, goal)
-
+    #main loop to run pygame window
     run = True
     while run:
         f_expanded = make_prompt(fNodes_expanded, PURPLE)
         b_expanded = make_prompt(bNodes_expanded, ORANGE)
         a_expanded = make_prompt(aNodes_expanded, TURQUOISE)
         draw(WIN, graph, GRID_DIM, BLOCK_DIM, WIN_DIM, FPS, f_expanded, b_expanded, a_expanded)
-
+        #quit out of pygame window if exit button is pressed
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 run = False
 
         if event.type == pg.KEYDOWN:
+            #if keydown '1' run repeated forward and save graph to txt file
             if event.key == pg.K_1:
                 resetGraph(graph)
                 graph.resetNodes()
                 number = 1
                 fNodes_expanded = repeatedForwardsAlgo(lambda: draw(WIN, graph, GRID_DIM, BLOCK_DIM, WIN_DIM, FPS, f_expanded, b_expanded, a_expanded), number, graph, start, goal)
                 saveGraph(graph, fileName1)
-
+            #if keydown '2' run repeated backward and save graph to txt file
             if event.key == pg.K_2:
                 resetGraph(graph)
                 graph.resetNodes()
                 number = 2
                 bNodes_expanded = repeatedBackwardsAlgo(lambda: draw(WIN, graph, GRID_DIM, BLOCK_DIM, WIN_DIM, FPS, f_expanded, b_expanded, a_expanded), number, graph, start, goal)
                 saveGraph(graph, fileName2)
-
+            #if keydown '3' run adaptive and save graph to txt file
             if event.key == pg.K_3:
                 resetGraph(graph)
                 graph.resetNodes()
                 number = 3
                 aNodes_expanded = adaptiveAlgorithm(lambda: draw(WIN, graph, GRID_DIM, BLOCK_DIM, WIN_DIM, FPS, f_expanded, b_expanded, a_expanded), number, graph, start, goal)
                 saveGraph(graph, fileName3)
-
+            #if keydown 'c' reset graph
             if event.key == pg.K_c:
                 resetGraph(graph)
-
+            #if keydown 'f' load repeated forward graph
             if event.key == pg.K_f:
                 graphFile = 'forward_graph.txt'
                 filesize = path.getsize(graphFile)
@@ -224,8 +196,7 @@ def main():
                     print('empty file')
                 else:
                     loadGraph(graph, graphFile)
-
-
+            #if keydown 'b' load repeated backward graph
             if event.key == pg.K_b:
                 graphFile = 'backward_graph.txt'
                 filesize = path.getsize(graphFile)
@@ -233,8 +204,7 @@ def main():
                     print('empty file')
                 else:
                     loadGraph(graph, graphFile)
-
-
+            #if keydown 'a' load adaptive graph
             if event.key == pg.K_a:
                 graphFile = 'adaptive_graph.txt'
                 filesize = path.getsize(graphFile)
@@ -242,6 +212,24 @@ def main():
                     print('empty file')
                 else:
                     loadGraph(graph, graphFile)
+            if event.key == pg.K_r:
+                f = open(fileName1,"w")
+                f.close()
+                f = open(fileName2,"w")
+                f.close()
+                f = open(fileName3,"w")
+                f.close()
+                fNodes_expanded = 0
+                bNodes_expanded = 0
+                aNodes_expanded = 0
+
+                graph = Graph(GRID_DIM,GRID_DIM)
+                #set goal and start states
+                start = selectRandomNode(graph)
+                goal = selectRandomNode(graph)
+
+                init_graph(graph)
+                graph.draw_blocks(start, goal)
 
     pg.quit()
 

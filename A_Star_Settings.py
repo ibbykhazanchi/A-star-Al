@@ -14,15 +14,9 @@ LIGHTGREY = (100, 100, 100)
 TURQUOISE = (64, 224, 208)
 DARK_CHAR = (69,139,0)
 HOT_PINK = (255,20,147)
-D_BLUE = (28,134,238)
-SKY_BLUE = (0,191,255)
-OLIVE = (202,255,112)
-D_GREEN = (0,100,0)
-D_PINK = (139,10,80)
-VIOLET = (148,0,211)
 
 FPS = 60 #set frames per second
-WIDTH = 950 #pygame window width
+WIDTH = 1010 #pygame window width
 HEIGHT = 606 # pygame window height
 WIN_DIM = 606 #grid dimensions in pixels squared
 GRID_DIM = 101 #grid dimensions squared

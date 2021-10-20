@@ -171,5 +171,3 @@ def create50graphs():
         graph = Graph(101, 101)
         graphs.append(graph)
     return graphs
-
-create50graphs()
